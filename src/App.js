@@ -8,12 +8,12 @@ export default function App() {
   return (
     <div className="mainContainer">
       <div className="dataContainer">
-        <div className="header">Hey there!</div>
+        <div className="header">Hello there!</div>
 
         <div className="bio">I am Harshal and I am trying Web3!</div>
 
         <button className="waveButton" onClick={wave}>
-          Wave at Me
+          Help at Me
         </button>
       </div>
     </div>
