@@ -1,14 +1,16 @@
 import { ethers } from "ethers";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import "./App.css";
 import abi from "./utils/WavePortal.json";
 
 export default function App() {
   const [currentAccount, setCurrentAccount] = useState("");
+  const [totalWave, setTotalWave] = useState(0);
+
   const contractAddress = "0x61c9e0c1c4d0a744a8f62c88674e7642a7cebb62";
   const contractABI = abi.abi;
 
-  const wave = async () => {
+  const getInitialWaves = useCallback(async () => {
     try {
       const { ethereum } = window;
 
@@ -23,6 +25,32 @@ export default function App() {
 
         let count = await wavePortalContract.getTotalWaves();
         console.log("Retrived total wave count...", count.toNumber());
+        setTotalWave(count.toNumber());
+      } else {
+        console.log("Ethereum OBject doesn;t exist");
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  }, [contractABI]);
+
+  const wave = async () => {
+    try {
+      const { ethereum } = window;
+
+      if (ethereum) {
+        const provider = new ethers.providers.Web3Provider(ethereum);
+        const signer = provider.getSigner();
+        const wavePortalContract = new ethers.Contract(
+          contractAddress,
+          contractABI,
+          signer
+        );
+
+        // let count = await wavePortalContract.getTotalWaves();
+        // console.log("Retrived total wave count...", count.toNumber());
+        // setTotalWave(count);
+        getInitialWaves();
 
         const waveTxn = await wavePortalContract.wave();
         console.log("Mining...", waveTxn.hash);
@@ -30,8 +58,9 @@ export default function App() {
         await waveTxn.wait();
         console.log("Mined --", waveTxn.hash);
 
-        count = await wavePortalContract.getTotalWaves();
+        let count = await wavePortalContract.getTotalWaves();
         console.log("Retrieved total wave count...", count.toNumber());
+        setTotalWave(count.toNumber());
       } else {
         console.log("Ethereum OBject doesn;t exist");
       }
@@ -86,7 +115,8 @@ export default function App() {
 
   useEffect(() => {
     checkIfWalletIsConnected();
-  }, []);
+    getInitialWaves();
+  }, [getInitialWaves]);
 
   return (
     <div className="mainContainer">
@@ -94,6 +124,9 @@ export default function App() {
         <div className="header">Well, Hello there ser!</div>
 
         <div className="bio">I am Harshal and I am trying Web3!</div>
+        <div className="bio">
+          Up until now, total {totalWave} have helped me
+        </div>
 
         <button className="waveButton" onClick={wave}>
           Help Me
