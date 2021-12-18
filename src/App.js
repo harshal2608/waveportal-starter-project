@@ -124,12 +124,10 @@ export default function App() {
         <div className="header">Well, Hello there ser!</div>
 
         <div className="bio">I am Harshal and I am trying Web3!</div>
-        <div className="bio">
-          Up until now, total {totalWave} have helped me
-        </div>
+        <div className="bio">total {totalWave} have waved at me</div>
 
         <button className="waveButton" onClick={wave}>
-          Help Me
+          Wave at Me
         </button>
 
         {!currentAccount && (
