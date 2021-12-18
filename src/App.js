@@ -14,11 +14,11 @@ export default function App() {
 
       if (ethereum) {
         const provider = new ethers.providers.Web3Provider(ethereum);
-        const singer = provider.getSigner();
+        const signer = provider.getSigner();
         const wavePortalContract = new ethers.Contract(
           contractAddress,
           contractABI,
-          singer
+          signer
         );
 
         let count = await wavePortalContract.getTotalWaves();
