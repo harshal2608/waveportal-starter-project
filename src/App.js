@@ -9,7 +9,7 @@ export default function App() {
   const [allWaves, setAllWaves] = useState([]);
   const [message, setMessage] = useState("");
 
-  const contractAddress = "0x71025563E4e08292b587535B0Aa26b5229f4b810";
+  const contractAddress = "0x0484b38795442a5E067016d0D5ae16bd486924bE";
   const contractABI = abi.abi;
 
   const getAllWaves = useCallback(async () => {
