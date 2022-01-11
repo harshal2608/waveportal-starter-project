@@ -9,12 +9,13 @@ export default function App() {
   const [allWaves, setAllWaves] = useState([]);
   const [message, setMessage] = useState("");
 
-  const contractAddress = "0x0484b38795442a5E067016d0D5ae16bd486924bE";
+  const contractAddress = "0xbF5D3d740645bAe6fE00332E9340E5d18031473d";
   const contractABI = abi.abi;
 
   const getAllWaves = useCallback(async () => {
+    const { ethereum } = window;
+
     try {
-      const { ethereum } = window;
       if (ethereum) {
         const provider = new ethers.providers.Web3Provider(ethereum);
         const signer = provider.getSigner();
@@ -25,20 +26,20 @@ export default function App() {
         );
         const waves = await wavePortalContract.getAllWaves();
 
-        let wavesCleaned = [];
-        waves.forEach((wave) => {
-          wavesCleaned.push({
+        const wavesCleaned = waves.map((wave) => {
+          return {
             address: wave.waver,
             timestamp: new Date(wave.timestamp * 1000),
             message: wave.message,
-          });
+          };
         });
+
         setAllWaves(wavesCleaned);
       } else {
-        console.log("Ethereum Object does not exist");
+        console.log("Ethereum object doesn't exist!");
       }
-    } catch (e) {
-      console.log(e);
+    } catch (error) {
+      console.log(error);
     }
   }, [contractABI]);
 
@@ -87,7 +88,9 @@ export default function App() {
         // setTotalWave(count);
         getInitialWaves();
         console.log(message);
-        const waveTxn = await wavePortalContract.wave(message);
+        const waveTxn = await wavePortalContract.wave(message, {
+          gasLimit: 300000,
+        });
         console.log("Mining...", waveTxn.hash);
 
         await waveTxn.wait();
@@ -153,6 +156,40 @@ export default function App() {
     checkIfWalletIsConnected();
     getInitialWaves();
   }, [checkIfWalletIsConnected, getInitialWaves]);
+
+  useEffect(() => {
+    let wavePortalContract;
+
+    const onNewWave = (from, timestamp, message) => {
+      console.log("NewWave", from, timestamp, message);
+      setAllWaves((prevState) => [
+        ...prevState,
+        {
+          address: from,
+          timestamp: new Date(timestamp * 1000),
+          message: message,
+        },
+      ]);
+    };
+
+    if (window.ethereum) {
+      const provider = new ethers.providers.Web3Provider(window.ethereum);
+      const signer = provider.getSigner();
+
+      wavePortalContract = new ethers.Contract(
+        contractAddress,
+        contractABI,
+        signer
+      );
+      wavePortalContract.on("NewWave", onNewWave);
+    }
+
+    return () => {
+      if (wavePortalContract) {
+        wavePortalContract.off("NewWave", onNewWave);
+      }
+    };
+  }, [contractABI]);
 
   const messageHandler = (event) => {
     setMessage(event.target.value);
